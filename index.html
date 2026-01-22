@@ -25,20 +25,25 @@ button {background: var(--accent); color:white; border:none; cursor:pointer;}
 button:hover {opacity:0.9;}
 ul {list-style:none; padding:0; margin-top:10px;}
 li {background:#ddd; color:#000; padding:10px; border-radius:6px; margin-bottom:10px; display:flex; flex-direction:column;}
-.completed {background:#b7e4b1; opacity: 0.8;}
+.completed {background:#b7e4b1 !important; opacity: 0.8;}
+
+/* FONTE DOS ITENS AJUSTADA */
+.item-nome { font-size: 19px; font-weight: bold; color: #111; }
+
 .linha {display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;}
 .check-btn {background: var(--check-color); margin:5px 0; padding:10px 15px; border-radius:6px; color:#fff; font-weight:bold; border:none; cursor:pointer; font-size:16px;}
 .delete-btn {background:red; margin:5px 0; padding:6px; border-radius:5px; color:#fff; border:none; cursor:pointer;}
 .tab-buttons {display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap;}
 .tab-buttons button {flex:1;}
-#totalChecked {text-align:right; font-weight:bold; margin-top:10px;}
+#totalChecked {text-align:right; font-weight:bold; margin-top:10px; font-size: 18px;}
 #top-buttons {display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;}
 #top-buttons button {flex:1;}
 #inputs {display:flex; flex-wrap:wrap; gap:10px;}
 #inputs input, #inputs select {flex:1 1 150px;}
 #search-input {width:100%; padding:8px; margin-bottom:10px; border-radius:6px; border:1px solid #bbb; font-size:16px;}
-.category-section {margin-top:15px;}
-.category-section h3 {margin-bottom:5px; border-bottom: 2px solid var(--accent);}
+.category-section {margin-top:15px; padding: 10px; background: rgba(0,0,0,0.05); border-radius: 8px;}
+.category-section h3 {margin-bottom:5px; border-bottom: 2px solid var(--accent); padding-bottom: 3px;}
+.cat-item-row { display: flex; justify-content: space-between; margin: 3px 0; }
 </style>
 </head>
 <body>
@@ -77,7 +82,7 @@ li {background:#ddd; color:#000; padding:10px; border-radius:6px; margin-bottom:
 
     <div id="aba-checados" style="display:none;">
         <ul id="lista-checados"></ul>
-        <div id="totalChecked">Total: R$ 0,00</div>
+        <div id="totalChecked">Total Pegos: R$ 0,00</div>
     </div>
 
     <div id="aba-categoria" style="display:none;">
@@ -86,11 +91,9 @@ li {background:#ddd; color:#000; padding:10px; border-radius:6px; margin-bottom:
 </div>
 
 <script type="module">
-    // Importações do Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, writeBatch, query, orderBy, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // Suas chaves configuradas
     const firebaseConfig = {
         apiKey: "AIzaSyCXslBuhgE9zd-ciH-3D4yIvdvAqYLGdHA",
         authDomain: "lista-de-mercado-7f370.firebaseapp.com",
@@ -100,19 +103,20 @@ li {background:#ddd; color:#000; padding:10px; border-radius:6px; margin-bottom:
         appId: "1:350679054404:web:f88ae672c6b02a02fe2411"
     };
 
-    // Inicialização
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const comprasRef = collection(db, "compras");
 
-    // Ativar persistência offline
-    enableIndexedDbPersistence(db).catch((err) => console.log("Erro offline:", err.message));
+    enableIndexedDbPersistence(db).catch(() => {});
 
     let lista = [];
-    let darkMode = JSON.parse(localStorage.getItem("darkMode")) || false;
-    if(darkMode) document.body.classList.add("dark");
 
-    // --- SINCRONIZAÇÃO EM TEMPO REAL ---
+    window.toggleDarkMode = () => {
+        const isDark = document.body.classList.toggle("dark");
+        localStorage.setItem("darkMode", isDark);
+    };
+    if(localStorage.getItem("darkMode") === "true") document.body.classList.add("dark");
+
     const q = query(comprasRef, orderBy("criadoEm", "desc"));
     onSnapshot(q, (snapshot) => {
         lista = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -121,7 +125,6 @@ li {background:#ddd; color:#000; padding:10px; border-radius:6px; margin-bottom:
         renderCategoria();
     });
 
-    // --- FUNÇÕES DE AÇÃO ---
     window.addItem = async () => {
         const nome = document.getElementById("nome").value.trim();
         const valor = parseFloat(document.getElementById("valor").value) || 0;
@@ -129,11 +132,7 @@ li {background:#ddd; color:#000; padding:10px; border-radius:6px; margin-bottom:
         const categoria = document.getElementById("categoria").value;
         if(!nome) return alert("Digite o nome!");
 
-        await addDoc(comprasRef, { 
-            nome, valor, quantidade, categoria, 
-            checado: false, criadoEm: Date.now() 
-        });
-
+        await addDoc(comprasRef, { nome, valor, quantidade, categoria, checado: false, criadoEm: Date.now() });
         document.getElementById("nome").value = "";
         document.getElementById("valor").value = "";
     };
@@ -155,7 +154,7 @@ li {background:#ddd; color:#000; padding:10px; border-radius:6px; margin-bottom:
     };
 
     window.limparLista = async () => {
-        if(confirm("Apagar toda a lista do banco de dados?")){
+        if(confirm("Apagar toda a lista?")){
             const batch = writeBatch(db);
             lista.forEach(item => batch.delete(doc(db, "compras", item.id)));
             await batch.commit();
@@ -163,23 +162,11 @@ li {background:#ddd; color:#000; padding:10px; border-radius:6px; margin-bottom:
     };
 
     window.carregarSugestao = async () => {
-        if(confirm("Carregar sugestões?")){
-            const sugestoes = [
-                {nome:"Arroz", valor:25, quantidade:1, categoria:"Mercearia"},
-                {nome:"Feijão", valor:8, quantidade:2, categoria:"Mercearia"},
-                {nome:"Leite", valor:5, quantidade:4, categoria:"Laticínios"}
-            ];
-            for(let s of sugestoes) {
-                await addDoc(comprasRef, { ...s, checado: false, criadoEm: Date.now() });
-            }
-        }
-    };
-
-    // --- FUNÇÕES DE TELA ---
-    window.toggleDarkMode = () => {
-        darkMode = !darkMode;
-        document.body.classList.toggle("dark");
-        localStorage.setItem("darkMode", JSON.stringify(darkMode));
+        const sugestoes = [
+            {nome:"Arroz", valor:25, quantidade:1, categoria:"Mercearia"},
+            {nome:"Leite", valor:5, quantidade:4, categoria:"Laticínios"}
+        ];
+        for(let s of sugestoes) await addDoc(comprasRef, { ...s, checado: false, criadoEm: Date.now() });
     };
 
     window.abrirAba = (aba) => {
@@ -192,14 +179,13 @@ li {background:#ddd; color:#000; padding:10px; border-radius:6px; margin-bottom:
         const filtro = document.getElementById("search-input").value.toLowerCase();
         const ul = document.getElementById("lista");
         ul.innerHTML = "";
-        
         lista.forEach((item) => {
             if(filtro && !item.nome.toLowerCase().includes(filtro)) return;
             let li = document.createElement("li");
             if(item.checado) li.classList.add("completed");
             li.innerHTML = `
                 <div class="linha">
-                    <strong>${item.nome}</strong>
+                    <strong class="item-nome">${item.nome}</strong>
                     <div style="display:flex; gap:5px;">
                         R$: <input type="number" value="${item.valor}" step="0.01" style="width:70px" onchange="atualizarValor('${item.id}', this.value)">
                         Qtd: <input type="number" value="${item.quantidade}" style="width:50px" onchange="atualizarQuantidade('${item.id}', this.value)">
@@ -224,7 +210,7 @@ li {background:#ddd; color:#000; padding:10px; border-radius:6px; margin-bottom:
         lista.filter(i => i.checado).forEach(i => {
             let sub = i.valor * i.quantidade;
             total += sub;
-            ul.innerHTML += <li><strong>${i.nome}</strong> (x${i.quantidade}) - R$ ${sub.toFixed(2)}</li>;
+            ul.innerHTML += `<li><strong>${i.nome}</strong> (x${i.quantidade}) - R$ ${sub.toFixed(2)}</li>`;
         });
         document.getElementById("totalChecked").innerText = "Total Pegos: R$ " + total.toFixed(2);
     };
@@ -236,21 +222,33 @@ li {background:#ddd; color:#000; padding:10px; border-radius:6px; margin-bottom:
         categorias.forEach(cat => {
             const section = document.createElement("div");
             section.className = "category-section";
-            section.innerHTML = <h3>${cat}</h3><ul></ul>;
-            const ul = section.querySelector("ul");
+            let subtotal = 0;
+            let itensHtml = "";
+            
             lista.filter(i => i.categoria === cat).forEach(i => {
-                ul.innerHTML += <li>${i.nome} ${i.checado ? '✅' : ''}</li>;
+                let totalItem = i.valor * i.quantidade;
+                subtotal += totalItem;
+                itensHtml += `
+                    <div class="cat-item-row">
+                        <span>${i.checado ? '✅' : '⬜'} ${i.nome} (x${i.quantidade})</span>
+                        <span>R$ ${totalItem.toFixed(2)}</span>
+                    </div>`;
             });
+
+            section.innerHTML = `
+                <h3>${cat}</h3>
+                ${itensHtml}
+                <div style="text-align:right; font-weight:bold; margin-top:5px; color: var(--accent);">Subtotal: R$ ${subtotal.toFixed(2)}</div>
+            `;
             container.appendChild(section);
         });
     };
 
     window.exportarLista = () => {
         let texto = "🛒 Lista de Compras:\n\n";
-        lista.forEach(i => texto += - ${i.nome} (x${i.quantidade}) ${i.checado?'[OK]':''}\n);
+        lista.forEach(i => texto += `- ${i.nome} (x${i.quantidade}) ${i.checado?'[OK]':''}\n`);
         navigator.clipboard.writeText(texto).then(() => alert("Copiado!"));
     };
-
 </script>
 </body>
 </html>
