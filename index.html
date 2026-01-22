@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lista de Compras Compartilhada</title>
-<style>
+
+<link rel="icon" href="shopping-cart.png" type="image/png">
+<link rel="apple-touch-icon" href="shopping-cart-180x180.png"> <link rel="manifest" href="manifest.json"> <meta name="theme-color" content="#28a745"> <style>
 :root {
     --bg: #f4f4f4; --card: white; --text: #222; --accent: #28a745; --check-color: #ff5722;
 }
@@ -29,6 +31,9 @@ li {background:#ddd; color:#000; padding:10px; border-radius:6px; margin-bottom:
 
 /* FONTE DOS ITENS AJUSTADA */
 .item-nome { font-size: 19px; font-weight: bold; color: #111; }
+.dark .item-nome { color: #eee; } /* Ajuste de cor para modo escuro */
+.dark li { background: #555; color: #fff; } /* Ajuste de cor para modo escuro */
+
 
 .linha {display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;}
 .check-btn {background: var(--check-color); margin:5px 0; padding:10px 15px; border-radius:6px; color:#fff; font-weight:bold; border:none; cursor:pointer; font-size:16px;}
@@ -42,6 +47,7 @@ li {background:#ddd; color:#000; padding:10px; border-radius:6px; margin-bottom:
 #inputs input, #inputs select {flex:1 1 150px;}
 #search-input {width:100%; padding:8px; margin-bottom:10px; border-radius:6px; border:1px solid #bbb; font-size:16px;}
 .category-section {margin-top:15px; padding: 10px; background: rgba(0,0,0,0.05); border-radius: 8px;}
+.dark .category-section { background: rgba(255,255,255,0.05); } /* Ajuste para modo escuro */
 .category-section h3 {margin-bottom:5px; border-bottom: 2px solid var(--accent); padding-bottom: 3px;}
 .cat-item-row { display: flex; justify-content: space-between; margin: 3px 0; }
 </style>
@@ -182,6 +188,15 @@ li {background:#ddd; color:#000; padding:10px; border-radius:6px; margin-bottom:
         lista.forEach((item) => {
             if(filtro && !item.nome.toLowerCase().includes(filtro)) return;
             let li = document.createElement("li");
+            // Adicionado ajuste de cor para o texto do item no modo escuro
+            if(document.body.classList.contains('dark')) {
+                li.style.color = '#fff';
+                li.style.background = '#555';
+            } else {
+                li.style.color = '#000';
+                li.style.background = '#ddd';
+            }
+            
             if(item.checado) li.classList.add("completed");
             li.innerHTML = `
                 <div class="linha">
