@@ -5,61 +5,73 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lista de Compras Compartilhada</title>
 <style>
-:root { --bg: #f4f4f4; --card: white; --text: #222; --accent: #28a745; --check-color: #ff5722; }
-.dark { --bg: #222; --card: #333; --text: #fff; --accent: #4caf50; --check-color: #ff9800; }
-body { font-family: Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; transition: 0.3s; }
-#app { max-width: 900px; margin: auto; background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 0 12px rgba(0,0,0,0.2); }
+:root {
+    --bg: #f4f4f4; --card: white; --text: #222; --accent: #28a745; --check-color: #ff5722;
+}
+.dark {
+    --bg: #222; --card: #333; --text: #fff; --accent: #4caf50; --check-color: #ff9800;
+}
+body {
+    font-family: Arial, sans-serif; background: var(--bg); color: var(--text);
+    margin: 0; padding: 20px; transition: 0.3s;
+}
+#app {
+    max-width: 900px; margin: auto; background: var(--card);
+    padding: 20px; border-radius: 12px; box-shadow: 0 0 12px rgba(0,0,0,0.2);
+}
 h2 {text-align:center; margin-bottom:20px;}
 input, select, button {padding:8px; margin:5px 0; border-radius:6px; border:1px solid #bbb; font-size:16px;}
 button {background: var(--accent); color:white; border:none; cursor:pointer;}
 button:hover {opacity:0.9;}
 ul {list-style:none; padding:0; margin-top:10px;}
 li {background:#ddd; color:#000; padding:10px; border-radius:6px; margin-bottom:10px; display:flex; flex-direction:column;}
-li.completed { background: #b7e4b1; opacity: 0.8; }
+.completed {background:#b7e4b1; opacity: 0.8;}
 .linha {display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;}
-.check-btn {background: var(--check-color); margin:5px 0; padding:10px 15px; border-radius:6px; color:#fff; font-weight:bold; border:none; cursor:pointer;}
+.check-btn {background: var(--check-color); margin:5px 0; padding:10px 15px; border-radius:6px; color:#fff; font-weight:bold; border:none; cursor:pointer; font-size:16px;}
 .delete-btn {background:red; margin:5px 0; padding:6px; border-radius:5px; color:#fff; border:none; cursor:pointer;}
-.tab-buttons {display:flex; gap:10px; margin-bottom:10px;}
+.tab-buttons {display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap;}
 .tab-buttons button {flex:1;}
 #totalChecked {text-align:right; font-weight:bold; margin-top:10px;}
 #top-buttons {display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;}
 #top-buttons button {flex:1;}
 #inputs {display:flex; flex-wrap:wrap; gap:10px;}
 #inputs input, #inputs select {flex:1 1 150px;}
-#search-input {width:100%; padding:8px; margin-bottom:10px; border-radius:6px; border:1px solid #bbb;}
-.category-section {margin-top:15px; border-top: 1px solid #ccc; padding-top: 10px;}
+#search-input {width:100%; padding:8px; margin-bottom:10px; border-radius:6px; border:1px solid #bbb; font-size:16px;}
+.category-section {margin-top:15px;}
+.category-section h3 {margin-bottom:5px; border-bottom: 2px solid var(--accent);}
 </style>
 </head>
 <body>
 
 <div id="app">
-    <h2>🛒 Lista Compartilhada</h2>
+    <h2>🛒 Lista de Compras</h2>
 
     <div id="top-buttons">
-        <button onclick="toggleDarkMode()">🌙 Tema</button>
-        <button onclick="limparLista()" style="background:#d9534f">🗑 Limpar Tudo</button>
-        <button onclick="exportarLista()" style="background:#007bff">📤 Copiar Texto</button>
+        <button onclick="toggleDarkMode()">🌙 Tema Escuro/Claro</button>
+        <button onclick="limparLista()" style="background:#d9534f">🗑 Limpar Lista</button>
+        <button onclick="exportarLista()" style="background:#007bff">📤 Exportar Lista</button>
+        <button onclick="carregarSugestao()" style="background:#ffa500">💡 Sugestões</button>
     </div>
 
     <div class="tab-buttons">
-        <button onclick="abrirAba('todos')">📋 Itens</button>
-        <button onclick="abrirAba('checados')">✅ Pegos</button>
-        <button onclick="abrirAba('categoria')">📂 Categorias</button>
+        <button onclick="abrirAba('todos')">📋 Todos os Itens</button>
+        <button onclick="abrirAba('checados')">✅ Itens Pegos</button>
+        <button onclick="abrirAba('categoria')">📂 Por Categoria</button>
     </div>
 
     <div id="aba-todos">
         <input type="text" id="search-input" placeholder="🔍 Buscar item..." oninput="render()">
         <div id="inputs">
-            <input type="text" id="nome" placeholder="Produto">
-            <input type="number" id="valor" placeholder="R$ Valor" step="0.01">
-            <input type="number" id="quantidade" placeholder="Qtde" value="1">
+            <input type="text" id="nome" placeholder="Nome do produto">
+            <input type="number" id="valor" placeholder="Valor" step="0.01">
+            <input type="number" id="quantidade" placeholder="Qtd" value="1">
             <select id="categoria">
-                <option>Mercearia</option><option>Hortifruti</option><option>Carnes</option>
-                <option>Laticínios</option><option>Higiene</option><option>Limpeza</option>
+                <option>Hortifruti</option><option>Carnes</option><option>Laticínios</option>
+                <option>Mercearia</option><option>Higiene</option><option>Limpeza</option>
                 <option>Bebidas</option><option>Outros</option>
             </select>
         </div>
-        <button onclick="addItem()" style="width:100%; margin-top:10px; height:45px;">➕ Adicionar Item</button>
+        <button onclick="addItem()" style="width:100%; margin-top:10px;">➕ Adicionar Item</button>
         <ul id="lista"></ul>
     </div>
 
@@ -74,10 +86,11 @@ li.completed { background: #b7e4b1; opacity: 0.8; }
 </div>
 
 <script type="module">
+    // Importações do Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, writeBatch, query, orderBy, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // --- CONFIGURAÇÃO FIREBASE ---
+    // Suas chaves configuradas
     const firebaseConfig = {
         apiKey: "AIzaSyCXslBuhgE9zd-ciH-3D4yIvdvAqYLGdHA",
         authDomain: "lista-de-mercado-7f370.firebaseapp.com",
@@ -87,36 +100,42 @@ li.completed { background: #b7e4b1; opacity: 0.8; }
         appId: "1:350679054404:web:f88ae672c6b02a02fe2411"
     };
 
+    // Inicialização
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const comprasRef = collection(db, "compras");
 
-    // Ativar modo Offline
-    enableIndexedDbPersistence(db).catch(err => console.error("Erro offline:", err.code));
+    // Ativar persistência offline
+    enableIndexedDbPersistence(db).catch((err) => console.log("Erro offline:", err.message));
 
     let lista = [];
     let darkMode = JSON.parse(localStorage.getItem("darkMode")) || false;
     if(darkMode) document.body.classList.add("dark");
 
-    // --- ESCUTAR BANCO DE DADOS (TEMPO REAL) ---
-    const q = query(comprasRef, orderBy("data", "desc"));
+    // --- SINCRONIZAÇÃO EM TEMPO REAL ---
+    const q = query(comprasRef, orderBy("criadoEm", "desc"));
     onSnapshot(q, (snapshot) => {
-        lista = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        lista = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         render();
         renderChecados();
         renderCategoria();
     });
 
-    // --- FUNÇÕES GLOBAIS ---
+    // --- FUNÇÕES DE AÇÃO ---
     window.addItem = async () => {
         const nome = document.getElementById("nome").value.trim();
         const valor = parseFloat(document.getElementById("valor").value) || 0;
         const quantidade = parseInt(document.getElementById("quantidade").value) || 1;
         const categoria = document.getElementById("categoria").value;
         if(!nome) return alert("Digite o nome!");
-        
-        await addDoc(comprasRef, { nome, valor, quantidade, categoria, checado: false, data: Date.now() });
+
+        await addDoc(comprasRef, { 
+            nome, valor, quantidade, categoria, 
+            checado: false, criadoEm: Date.now() 
+        });
+
         document.getElementById("nome").value = "";
+        document.getElementById("valor").value = "";
     };
 
     window.checkItem = async (id, status) => {
@@ -124,7 +143,7 @@ li.completed { background: #b7e4b1; opacity: 0.8; }
     };
 
     window.remover = async (id) => {
-        if(confirm("Excluir item?")) await deleteDoc(doc(db, "compras", id));
+        if(confirm("Remover este item?")) await deleteDoc(doc(db, "compras", id));
     };
 
     window.atualizarValor = async (id, v) => {
@@ -136,13 +155,27 @@ li.completed { background: #b7e4b1; opacity: 0.8; }
     };
 
     window.limparLista = async () => {
-        if(confirm("Apagar todos os itens do banco?")){
+        if(confirm("Apagar toda a lista do banco de dados?")){
             const batch = writeBatch(db);
             lista.forEach(item => batch.delete(doc(db, "compras", item.id)));
             await batch.commit();
         }
     };
 
+    window.carregarSugestao = async () => {
+        if(confirm("Carregar sugestões?")){
+            const sugestoes = [
+                {nome:"Arroz", valor:25, quantidade:1, categoria:"Mercearia"},
+                {nome:"Feijão", valor:8, quantidade:2, categoria:"Mercearia"},
+                {nome:"Leite", valor:5, quantidade:4, categoria:"Laticínios"}
+            ];
+            for(let s of sugestoes) {
+                await addDoc(comprasRef, { ...s, checado: false, criadoEm: Date.now() });
+            }
+        }
+    };
+
+    // --- FUNÇÕES DE TELA ---
     window.toggleDarkMode = () => {
         darkMode = !darkMode;
         document.body.classList.toggle("dark");
@@ -159,25 +192,27 @@ li.completed { background: #b7e4b1; opacity: 0.8; }
         const filtro = document.getElementById("search-input").value.toLowerCase();
         const ul = document.getElementById("lista");
         ul.innerHTML = "";
-        lista.forEach(item => {
+        
+        lista.forEach((item) => {
             if(filtro && !item.nome.toLowerCase().includes(filtro)) return;
-            const li = document.createElement("li");
+            let li = document.createElement("li");
             if(item.checado) li.classList.add("completed");
             li.innerHTML = `
                 <div class="linha">
                     <strong>${item.nome}</strong>
-                    <div>
-                        R$ <input type="number" value="${item.valor}" step="0.01" style="width:65px" onchange="atualizarValor('${item.id}', this.value)">
-                        Qtd: <input type="number" value="${item.quantidade}" style="width:45px" onchange="atualizarQuantidade('${item.id}', this.value)">
+                    <div style="display:flex; gap:5px;">
+                        R$: <input type="number" value="${item.valor}" step="0.01" style="width:70px" onchange="atualizarValor('${item.id}', this.value)">
+                        Qtd: <input type="number" value="${item.quantidade}" style="width:50px" onchange="atualizarQuantidade('${item.id}', this.value)">
                     </div>
                 </div>
-                <div class="linha">
-                    <small>${item.categoria}</small>
-                    <div>
-                        <button class="check-btn" onclick="checkItem('${item.id}', ${item.checado})">${item.checado?'✅':'☑️'}</button>
-                        <button class="delete-btn" onclick="remover('${item.id}')">🗑</button>
+                <div class="linha" style="margin-top:8px;">
+                    <small>Categoria: ${item.categoria}</small>
+                    <div style="display:flex; gap:5px;">
+                        <button class="check-btn" onclick="checkItem('${item.id}', ${item.checado})">${item.checado?'✅ PEGOU':'☑️ CHECK'}</button>
+                        <button class="delete-btn" onclick="remover('${item.id}')">Excluir</button>
                     </div>
-                </div>`;
+                </div>
+            `;
             ul.appendChild(li);
         });
     };
@@ -189,7 +224,7 @@ li.completed { background: #b7e4b1; opacity: 0.8; }
         lista.filter(i => i.checado).forEach(i => {
             let sub = i.valor * i.quantidade;
             total += sub;
-            ul.innerHTML += <li>${i.nome} (${i.quantidade}x) - R$ ${sub.toFixed(2)}</li>;
+            ul.innerHTML += <li><strong>${i.nome}</strong> (x${i.quantidade}) - R$ ${sub.toFixed(2)}</li>;
         });
         document.getElementById("totalChecked").innerText = "Total Pegos: R$ " + total.toFixed(2);
     };
@@ -197,21 +232,25 @@ li.completed { background: #b7e4b1; opacity: 0.8; }
     window.renderCategoria = () => {
         const container = document.getElementById("categoria-lista");
         container.innerHTML = "";
-        const cats = [...new Set(lista.map(i => i.categoria))];
-        cats.forEach(cat => {
-            let html = <div class="category-section"><h3>${cat}</h3><ul>;
+        const categorias = [...new Set(lista.map(i => i.categoria))];
+        categorias.forEach(cat => {
+            const section = document.createElement("div");
+            section.className = "category-section";
+            section.innerHTML = <h3>${cat}</h3><ul></ul>;
+            const ul = section.querySelector("ul");
             lista.filter(i => i.categoria === cat).forEach(i => {
-                html += <li>${i.nome} ${i.checado ? '✅' : ''}</li>;
+                ul.innerHTML += <li>${i.nome} ${i.checado ? '✅' : ''}</li>;
             });
-            container.innerHTML += html + </ul></div>;
+            container.appendChild(section);
         });
     };
 
     window.exportarLista = () => {
-        let texto = "🛒 Minha Lista:\n" + lista.map(i => - ${i.nome} (${i.quantidade}x)).join('\n');
+        let texto = "🛒 Lista de Compras:\n\n";
+        lista.forEach(i => texto += - ${i.nome} (x${i.quantidade}) ${i.checado?'[OK]':''}\n);
         navigator.clipboard.writeText(texto).then(() => alert("Copiado!"));
     };
-</script>
 
+</script>
 </body>
 </html>
