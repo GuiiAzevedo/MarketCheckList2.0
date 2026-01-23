@@ -3,102 +3,100 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lista de Compras Compartilhada</title>
+<title>Lista de Compras Pro</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <link rel="icon" href="shopping-cart.png" type="image/png">
-<link rel="apple-touch-icon" href="shopping-cart-180x180.png"> <link rel="manifest" href="manifest.json"> <meta name="theme-color" content="#28a745"> <style>
-:root {
-    --bg: #f4f4f4; --card: white; --text: #222; --accent: #28a745; --check-color: #ff5722;
-}
-.dark {
-    --bg: #222; --card: #333; --text: #fff; --accent: #4caf50; --check-color: #ff9800;
-}
-body {
-    font-family: Arial, sans-serif; background: var(--bg); color: var(--text);
-    margin: 0; padding: 20px; transition: 0.3s;
-}
-#app {
-    max-width: 900px; margin: auto; background: var(--card);
-    padding: 20px; border-radius: 12px; box-shadow: 0 0 12px rgba(0,0,0,0.2);
-}
-h2 {text-align:center; margin-bottom:20px;}
+<link rel="manifest" href="manifest.json"> 
+<meta name="theme-color" content="#28a745"> 
+<style>
+:root { --bg: #f4f4f4; --card: white; --text: #222; --accent: #28a745; --check-color: #ff5722; }
+.dark { --bg: #222; --card: #333; --text: #fff; --accent: #4caf50; --check-color: #ff9800; }
+body { font-family: Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; transition: 0.3s; }
+#app { max-width: 900px; margin: auto; background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 0 12px rgba(0,0,0,0.2); position: relative; }
+#floatTotal { position: fixed; top: 10px; right: 10px; background: var(--accent); color: white; padding: 8px 12px; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.3); z-index: 1000; font-size: 14px; pointer-events: none; }
+h2 {text-align:center; margin-bottom:10px; padding-right: 60px;}
+.user-info { text-align: center; font-size: 14px; margin-bottom: 20px; color: var(--accent); font-weight: bold; }
 input, select, button {padding:8px; margin:5px 0; border-radius:6px; border:1px solid #bbb; font-size:16px;}
 button {background: var(--accent); color:white; border:none; cursor:pointer;}
 button:hover {opacity:0.9;}
 ul {list-style:none; padding:0; margin-top:10px;}
-li {background:#ddd; color:#000; padding:10px; border-radius:6px; margin-bottom:10px; display:flex; flex-direction:column;}
+li {background:#ddd; color:#000; padding:12px; border-radius:8px; margin-bottom:12px; display:flex; flex-direction:column; gap: 8px;}
 .completed {background:#b7e4b1 !important; opacity: 0.8;}
-
-/* FONTE DOS ITENS AJUSTADA */
-.item-nome { font-size: 19px; font-weight: bold; color: #111; }
-.dark .item-nome { color: #eee; } /* Ajuste de cor para modo escuro */
-.dark li { background: #555; color: #fff; } /* Ajuste de cor para modo escuro */
-
-
-.linha {display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;}
-.check-btn {background: var(--check-color); margin:5px 0; padding:10px 15px; border-radius:6px; color:#fff; font-weight:bold; border:none; cursor:pointer; font-size:16px;}
-.delete-btn {background:red; margin:5px 0; padding:6px; border-radius:5px; color:#fff; border:none; cursor:pointer;}
-.tab-buttons {display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap;}
-.tab-buttons button {flex:1;}
-#totalChecked {text-align:right; font-weight:bold; margin-top:10px; font-size: 18px;}
-#top-buttons {display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;}
-#top-buttons button {flex:1;}
-#inputs {display:flex; flex-wrap:wrap; gap:10px;}
-#inputs input, #inputs select {flex:1 1 150px;}
-#search-input {width:100%; padding:8px; margin-bottom:10px; border-radius:6px; border:1px solid #bbb; font-size:16px;}
+.item-nome { font-size: 19px; font-weight: bold; color: #111; display: block; margin-bottom: 5px; }
+.dark .item-nome { color: #eee; }
+.dark li { background: #555; color: #fff; }
+.linha {display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap: 8px;}
+.inputs-inline { display: flex; align-items: center; gap: 5px; font-size: 13px; }
+.inputs-inline input, .inputs-inline select { padding: 4px; font-size: 13px; }
+.check-btn {background: var(--check-color); padding:10px 15px; border-radius:6px; color:#fff; font-weight:bold; border:none; cursor:pointer;}
+.delete-btn {background:red; padding:10px; border-radius:6px; color:#fff; border:none; cursor:pointer;}
+.tab-buttons {display:flex; gap:5px; margin-bottom:10px; flex-wrap:wrap;}
+.tab-buttons button {flex:1; font-size: 13px; padding: 10px 2px;}
+.extra-actions { display: flex; gap: 5px; margin-bottom: 10px; flex-wrap: wrap;}
+.extra-actions button { flex: 1; font-size: 12px; background: #555; }
+#log-lista { font-size: 13px; max-height: 400px; overflow-y: auto; background: #eee; padding: 10px; border-radius: 8px; color: #333; }
+.dark #log-lista { background: #444; color: #ccc; }
 .category-section {margin-top:15px; padding: 10px; background: rgba(0,0,0,0.05); border-radius: 8px;}
-.dark .category-section { background: rgba(255,255,255,0.05); } /* Ajuste para modo escuro */
-.category-section h3 {margin-bottom:5px; border-bottom: 2px solid var(--accent); padding-bottom: 3px;}
-.cat-item-row { display: flex; justify-content: space-between; margin: 3px 0; }
 </style>
 </head>
 <body>
 
+<div id="floatTotal">R$ 0,00</div>
+
 <div id="app">
-    <h2>🛒 Lista de Compras</h2>
+    <h2>🛒 Lista Compras</h2>
+    <div id="userDisplay" class="user-info"></div>
 
     <div id="top-buttons">
-        <button onclick="toggleDarkMode()">🌙 Tema Escuro/Claro</button>
-        <button onclick="limparLista()" style="background:#d9534f">🗑 Limpar Lista</button>
-        <button onclick="exportarLista()" style="background:#007bff">📤 Exportar Lista</button>
+        <button onclick="toggleDarkMode()">🌙 Tema</button>
+        <button onclick="limparLista()" style="background:#d9534f">🗑 Limpar</button>
         <button onclick="carregarSugestao()" style="background:#ffa500">💡 Sugestões</button>
+        <button onclick="mudarUsuario()" style="background:#666">👤 Nome</button>
+    </div>
+
+    <div class="extra-actions">
+        <button onclick="exportarPDF()" style="background: #e74c3c;">📄 PDF</button>
+        <button onclick="copiarTexto()" style="background: #3498db;">📋 Copiar</button>
+        <button onclick="importarTexto()" style="background: #9b59b6;">📥 Importar</button>
     </div>
 
     <div class="tab-buttons">
-        <button onclick="abrirAba('todos')">📋 Todos os Itens</button>
-        <button onclick="abrirAba('checados')">✅ Itens Pegos</button>
-        <button onclick="abrirAba('categoria')">📂 Por Categoria</button>
+        <button onclick="abrirAba('todos')">📋 Global</button>
+        <button onclick="abrirAba('extra')">🌟 Extra</button>
+        <button onclick="abrirAba('categoria')">📂 Categorias</button>
+        <button onclick="abrirAba('log')">📜 Histórico</button>
     </div>
 
-    <div id="aba-todos">
+    <div id="aba-listas">
         <input type="text" id="search-input" placeholder="🔍 Buscar item..." oninput="render()">
         <div id="inputs">
-            <input type="text" id="nome" placeholder="Nome do produto">
-            <input type="number" id="valor" placeholder="Valor" step="0.01">
+            <input type="text" id="nome" placeholder="O que comprar?">
+            <input type="number" id="valor" placeholder="R$ Valor" step="0.01">
             <input type="number" id="quantidade" placeholder="Qtd" value="1">
-            <select id="categoria">
-                <option>Hortifruti</option><option>Carnes</option><option>Laticínios</option>
-                <option>Mercearia</option><option>Higiene</option><option>Limpeza</option>
-                <option>Bebidas</option><option>Outros</option>
+            <select id="categoria-main">
+                <option>Mercearia</option><option>Hortifruti</option><option>Carnes</option>
+                <option>Laticínios</option><option>Higiene</option><option>Limpeza</option>
+                <option>Bebidas</option><option>Padaria</option><option>Outros</option>
+            </select>
+            <select id="tipoItem">
+                <option value="global">Lista Global</option>
+                <option value="extra">Lista Extra</option>
             </select>
         </div>
-        <button onclick="addItem()" style="width:100%; margin-top:10px;">➕ Adicionar Item</button>
+        <button onclick="addItem()" style="width:100%; margin-top:10px;">➕ Adicionar</button>
         <ul id="lista"></ul>
+        <div id="totalChecked" style="text-align:right; font-weight:bold; font-size:18px; color:var(--accent); margin-top:10px; border-top: 1px solid #ccc; padding-top: 10px;">Total Pegos: R$ 0,00</div>
     </div>
 
-    <div id="aba-checados" style="display:none;">
-        <ul id="lista-checados"></ul>
-        <div id="totalChecked">Total Pegos: R$ 0,00</div>
-    </div>
-
-    <div id="aba-categoria" style="display:none;">
-        <div id="categoria-lista"></div>
-    </div>
+    <div id="aba-categoria" style="display:none;"><div id="categoria-lista"></div></div>
+    <div id="aba-log" style="display:none;"><h3>📜 Histórico</h3><div id="log-lista">Carregando histórico...</div></div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, writeBatch, query, orderBy, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, writeBatch, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCXslBuhgE9zd-ciH-3D4yIvdvAqYLGdHA",
@@ -112,158 +110,143 @@ li {background:#ddd; color:#000; padding:10px; border-radius:6px; margin-bottom:
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const comprasRef = collection(db, "compras");
-
-    enableIndexedDbPersistence(db).catch(() => {});
+    const logsRef = collection(db, "logs");
 
     let lista = [];
+    let abaAtual = 'global';
+    let usuario = localStorage.getItem("usuarioNome") || "Visitante";
+    const categoriasOpcoes = ["Mercearia", "Hortifruti", "Carnes", "Laticínios", "Higiene", "Limpeza", "Bebidas", "Padaria", "Outros"];
 
-    window.toggleDarkMode = () => {
-        const isDark = document.body.classList.toggle("dark");
-        localStorage.setItem("darkMode", isDark);
-    };
-    if(localStorage.getItem("darkMode") === "true") document.body.classList.add("dark");
+    document.getElementById("userDisplay").innerText = "👤 Usuário: " + usuario;
 
-    const q = query(comprasRef, orderBy("criadoEm", "desc"));
-    onSnapshot(q, (snapshot) => {
+    async function salvarLog(acao) {
+        await addDoc(logsRef, { texto: `${usuario} ${acao}`, hora: new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}), timestamp: Date.now() });
+    }
+
+    onSnapshot(query(comprasRef, orderBy("criadoEm", "desc")), (snapshot) => {
         lista = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        render();
-        renderChecados();
-        renderCategoria();
+        render(); renderCategoria();
     });
 
-    window.addItem = async () => {
-        const nome = document.getElementById("nome").value.trim();
-        const valor = parseFloat(document.getElementById("valor").value) || 0;
-        const quantidade = parseInt(document.getElementById("quantidade").value) || 1;
-        const categoria = document.getElementById("categoria").value;
-        if(!nome) return alert("Digite o nome!");
-
-        await addDoc(comprasRef, { nome, valor, quantidade, categoria, checado: false, criadoEm: Date.now() });
-        document.getElementById("nome").value = "";
-        document.getElementById("valor").value = "";
-    };
-
-    window.checkItem = async (id, status) => {
-        await updateDoc(doc(db, "compras", id), { checado: !status });
-    };
-
-    window.remover = async (id) => {
-        if(confirm("Remover este item?")) await deleteDoc(doc(db, "compras", id));
-    };
-
-    window.atualizarValor = async (id, v) => {
-        await updateDoc(doc(db, "compras", id), { valor: parseFloat(v) || 0 });
-    };
-
-    window.atualizarQuantidade = async (id, q) => {
-        await updateDoc(doc(db, "compras", id), { quantidade: parseInt(q) || 1 });
-    };
-
-    window.limparLista = async () => {
-        if(confirm("Apagar toda a lista?")){
-            const batch = writeBatch(db);
-            lista.forEach(item => batch.delete(doc(db, "compras", item.id)));
-            await batch.commit();
-        }
-    };
-
-    window.carregarSugestao = async () => {
-        const sugestoes = [
-            {nome:"Arroz", valor:25, quantidade:1, categoria:"Mercearia"},
-            {nome:"Leite", valor:5, quantidade:4, categoria:"Laticínios"}
-        ];
-        for(let s of sugestoes) await addDoc(comprasRef, { ...s, checado: false, criadoEm: Date.now() });
-    };
-
-    window.abrirAba = (aba) => {
-        document.getElementById("aba-todos").style.display = aba==='todos' ? 'block' : 'none';
-        document.getElementById("aba-checados").style.display = aba==='checados' ? 'block' : 'none';
-        document.getElementById("aba-categoria").style.display = aba==='categoria' ? 'block' : 'none';
-    };
+    onSnapshot(query(logsRef, orderBy("timestamp", "desc"), limit(40)), (snapshot) => {
+        const logContainer = document.getElementById("log-lista");
+        logContainer.innerHTML = snapshot.docs.map(d => `<div><span style="opacity:0.5">[${d.data().hora}]</span> ${d.data().texto}</div>`).join('');
+    });
 
     window.render = () => {
         const filtro = document.getElementById("search-input").value.toLowerCase();
         const ul = document.getElementById("lista");
         ul.innerHTML = "";
-        lista.forEach((item) => {
+        let total = 0;
+
+        lista.filter(i => i.tipo === abaAtual).forEach((item) => {
             if(filtro && !item.nome.toLowerCase().includes(filtro)) return;
-            let li = document.createElement("li");
-            // Adicionado ajuste de cor para o texto do item no modo escuro
-            if(document.body.classList.contains('dark')) {
-                li.style.color = '#fff';
-                li.style.background = '#555';
-            } else {
-                li.style.color = '#000';
-                li.style.background = '#ddd';
-            }
+            if(item.checado) total += (item.valor * item.quantidade);
             
+            let li = document.createElement("li");
             if(item.checado) li.classList.add("completed");
+
+            const catOptionsHtml = categoriasOpcoes.map(cat => `<option value="${cat}" ${item.categoria === cat ? 'selected' : ''}>${cat}</option>`).join('');
+
             li.innerHTML = `
+                <div><strong class="item-nome">${item.nome}</strong></div>
                 <div class="linha">
-                    <strong class="item-nome">${item.nome}</strong>
-                    <div style="display:flex; gap:5px;">
-                        R$: <input type="number" value="${item.valor}" step="0.01" style="width:70px" onchange="atualizarValor('${item.id}', this.value)">
-                        Qtd: <input type="number" value="${item.quantidade}" style="width:50px" onchange="atualizarQuantidade('${item.id}', this.value)">
+                    <div class="inputs-inline">
+                        R$ <input type="number" value="${item.valor}" step="0.01" style="width:65px" onchange="atualizarCampo('${item.id}', 'valor', this.value, '${item.nome}')">
+                        Qtd <input type="number" value="${item.quantidade}" style="width:40px" onchange="atualizarCampo('${item.id}', 'quantidade', this.value, '${item.nome}')">
+                    </div>
+                    <div class="inputs-inline">
+                        Cat: <select onchange="atualizarCampo('${item.id}', 'categoria', this.value, '${item.nome}')" style="width:100px">${catOptionsHtml}</select>
                     </div>
                 </div>
-                <div class="linha" style="margin-top:8px;">
-                    <small>Categoria: ${item.categoria}</small>
-                    <div style="display:flex; gap:5px;">
-                        <button class="check-btn" onclick="checkItem('${item.id}', ${item.checado})">${item.checado?'✅ PEGOU':'☑️ CHECK'}</button>
-                        <button class="delete-btn" onclick="remover('${item.id}')">Excluir</button>
-                    </div>
+                <div class="linha" style="margin-top:5px; justify-content: flex-end; gap: 8px;">
+                    <button class="check-btn" onclick="checkItem('${item.id}', ${item.checado}, '${item.nome}')">${item.checado?'PEGOU':'PEGAR'}</button>
+                    <button class="delete-btn" onclick="remover('${item.id}', '${item.nome}')">✖</button>
                 </div>
             `;
             ul.appendChild(li);
         });
+        document.getElementById("totalChecked").innerText = `Total Pegos (${abaAtual}): R$ ${total.toFixed(2)}`;
+        document.getElementById("floatTotal").innerText = `R$ ${total.toFixed(2)}`;
     };
 
-    window.renderChecados = () => {
-        const ul = document.getElementById("lista-checados");
-        ul.innerHTML = "";
-        let total = 0;
-        lista.filter(i => i.checado).forEach(i => {
-            let sub = i.valor * i.quantidade;
-            total += sub;
-            ul.innerHTML += `<li><strong>${i.nome}</strong> (x${i.quantidade}) - R$ ${sub.toFixed(2)}</li>`;
+    window.atualizarCampo = async (id, campo, valor, nome) => {
+        let finalVal = valor;
+        if(campo === 'valor') finalVal = parseFloat(valor) || 0;
+        if(campo === 'quantidade') finalVal = parseInt(valor) || 1;
+        
+        await updateDoc(doc(db, "compras", id), { [campo]: finalVal });
+        await salvarLog(`editou ${campo} de "${nome}"`);
+    };
+
+    window.addItem = async () => {
+        const n = document.getElementById("nome").value.trim();
+        const v = parseFloat(document.getElementById("valor").value) || 0;
+        const q = parseInt(document.getElementById("quantidade").value) || 1;
+        const c = document.getElementById("categoria-main").value;
+        const t = document.getElementById("tipoItem").value;
+        if(!n) return alert("Dê um nome!");
+        await addDoc(comprasRef, { nome: n, valor: v, quantidade: q, categoria: c, tipo: t, checado: false, criadoEm: Date.now() });
+        await salvarLog(`adicionou "${n}"`);
+        document.getElementById("nome").value = "";
+    };
+
+    window.carregarSugestao = async () => {
+        if(!confirm("Carregar sugestões exatas?")) return;
+        const s = ["Arroz", "Feijão", "Açúcar", "Sal", "Óleo", "Azeite", "Vinagre", "Café", "Chá", "Macarrão", "Molho de tomate", "Farinhas (trigo, milho/fubá, tapioca)", "Biscoitos (salgado/doce)", "Torradas", "Enlatados (milho, ervilha, atum, sardinha)", "Banana", "Maçã", "Laranja", "Melão", "Mamão", "Batata", "Cebola", "Alho", "Cenoura", "Tomate", "Abobrinha", "Alface", "Rúcula", "Espinafre", "Proteínas", "Laticínios", "Carnes bovina", "Frango", "Porco", "Ovos", "Leite (integral/desnatado ou vegetal)", "Queijos (mussarela, prato, minas)", "Presunto", "Manteiga", "Margarina", "Iogurte", "Papel higiênico", "Sabonete", "Shampoo", "Condicionador", "Pasta de dente", "Desodorante", "Sabão líquido", "Amaciante", "Detergente", "Esponja de lavar louça", "Desinfetante", "Água sanitária", "Sacos de lixo", "Pão (francês, forma)", "Temperos secos (orégano, páprica, pimenta)"];
+        const batch = writeBatch(db);
+        s.forEach(nome => { batch.set(doc(comprasRef), { nome, valor: 0, quantidade: 1, categoria: "Outros", tipo: "global", checado: false, criadoEm: Date.now() }); });
+        await batch.commit();
+        await salvarLog("carregou lista de sugestões");
+    };
+
+    window.checkItem = async (id, s, n) => { await updateDoc(doc(db, "compras", id), { checado: !s }); await salvarLog(`${!s?'✅':'🔄'} "${n}"`); };
+    window.remover = async (id, n) => { if(confirm(`Remover "${n}"?`)) { await deleteDoc(doc(db, "compras", id)); await salvarLog(`🗑 removeu "${n}"`); } };
+    
+    window.exportarPDF = () => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        let y = 20; let total = 0;
+        const filtrados = lista.filter(i => i.tipo === abaAtual);
+        filtrados.forEach(i => { if(i.checado) total += (i.valor * i.quantidade); });
+        doc.setFontSize(16); doc.text(`Lista: ${abaAtual.toUpperCase()}`, 10, y);
+        doc.setFontSize(12); doc.text(`Total: R$ ${total.toFixed(2)}`, 160, y);
+        y += 15; doc.setFontSize(10); doc.text(`Gerado em ${new Date().toLocaleString()}`, 10, y);
+        y += 5; doc.line(10, y, 200, y); y += 10;
+        filtrados.forEach((i) => {
+            if (y > 280) { doc.addPage(); y = 20; }
+            doc.text(`${i.checado?'[OK]':'[  ]'} ${i.nome} (x${i.quantidade}) - R$ ${(i.valor*i.quantidade).toFixed(2)}`, 10, y);
+            y += 8;
         });
-        document.getElementById("totalChecked").innerText = "Total Pegos: R$ " + total.toFixed(2);
+        doc.save(`lista_${abaAtual}.pdf`);
+    };
+
+    window.abrirAba = (aba) => {
+        document.getElementById("aba-listas").style.display = (aba === 'todos' || aba === 'extra') ? 'block' : 'none';
+        document.getElementById("aba-categoria").style.display = aba === 'categoria' ? 'block' : 'none';
+        document.getElementById("aba-log").style.display = aba === 'log' ? 'block' : 'none';
+        if(aba === 'todos') abaAtual = 'global'; if(aba === 'extra') abaAtual = 'extra';
+        render();
     };
 
     window.renderCategoria = () => {
-        const container = document.getElementById("categoria-lista");
-        container.innerHTML = "";
-        const categorias = [...new Set(lista.map(i => i.categoria))];
-        categorias.forEach(cat => {
-            const section = document.createElement("div");
-            section.className = "category-section";
-            let subtotal = 0;
-            let itensHtml = "";
-            
-            lista.filter(i => i.categoria === cat).forEach(i => {
-                let totalItem = i.valor * i.quantidade;
-                subtotal += totalItem;
-                itensHtml += `
-                    <div class="cat-item-row">
-                        <span>${i.checado ? '✅' : '⬜'} ${i.nome} (x${i.quantidade})</span>
-                        <span>R$ ${totalItem.toFixed(2)}</span>
-                    </div>`;
-            });
-
-            section.innerHTML = `
-                <h3>${cat}</h3>
-                ${itensHtml}
-                <div style="text-align:right; font-weight:bold; margin-top:5px; color: var(--accent);">Subtotal: R$ ${subtotal.toFixed(2)}</div>
-            `;
+        const container = document.getElementById("categoria-lista"); container.innerHTML = "";
+        categoriasOpcoes.forEach(cat => {
+            const items = lista.filter(i => i.categoria === cat); if(items.length === 0) return;
+            const section = document.createElement("div"); section.className = "category-section";
+            let sub = 0; let html = "";
+            items.forEach(i => { sub += (i.valor * i.quantidade); html += `<div style="display:flex; justify-content:space-between; font-size:14px;"><span>${i.checado?'✅':'⬜'} ${i.nome}</span><span>R$ ${(i.valor*i.quantidade).toFixed(2)}</span></div>`; });
+            section.innerHTML = `<h3>${cat}</h3>${html}<div style="text-align:right; font-weight:bold; border-top:1px solid #ccc;">Sub: R$ ${sub.toFixed(2)}</div>`;
             container.appendChild(section);
         });
     };
 
-    window.exportarLista = () => {
-        let texto = "🛒 Lista de Compras:\n\n";
-        lista.forEach(i => texto += `- ${i.nome} (x${i.quantidade}) ${i.checado?'[OK]':''}\n`);
-        navigator.clipboard.writeText(texto).then(() => alert("Copiado!"));
-    };
+    window.mudarUsuario = () => { let n = prompt("Seu nome:"); if(n) {localStorage.setItem("usuarioNome", n); location.reload();} };
+    window.toggleDarkMode = () => { const d = document.body.classList.toggle("dark"); localStorage.setItem("darkMode", d); };
+    if(localStorage.getItem("darkMode") === "true") document.body.classList.add("dark");
+    window.limparLista = async () => { if(confirm("Limpar esta aba?")) { const b = writeBatch(db); lista.filter(i => i.tipo === abaAtual).forEach(i => b.delete(doc(db, "compras", i.id))); await b.commit(); } };
+    window.copiarTexto = () => { let t = `🛒 LISTA ${abaAtual.toUpperCase()}\n\n`; lista.filter(i => i.tipo === abaAtual).forEach(i => { t += `${i.checado?'✅':'⬜'} ${i.nome} (x${i.quantidade})\n`; }); navigator.clipboard.writeText(t).then(() => alert("Copiado!")); };
+    window.importarTexto = async () => { const c = prompt("Cole itens:"); if(!c) return; const lines = c.split('\n'); const b = writeBatch(db); lines.forEach(l => { if(l.trim()){ let q = 1; let n = l.trim(); const p = l.trim().split(' '); if(!isNaN(p[0])) { q = parseInt(p[0]); n = p.slice(1).join(' '); } b.set(doc(comprasRef), { nome: n, valor: 0, quantidade: q, categoria: "Outros", tipo: abaAtual, checado: false, criadoEm: Date.now() }); }}); await b.commit(); };
 </script>
 </body>
 </html>
