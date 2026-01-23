@@ -16,11 +16,31 @@
 body { font-family: Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; transition: 0.3s; }
 #app { max-width: 900px; margin: auto; background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 0 12px rgba(0,0,0,0.2); position: relative; }
 #floatTotal { position: fixed; top: 10px; right: 10px; background: var(--accent); color: white; padding: 8px 12px; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.3); z-index: 1000; font-size: 14px; pointer-events: none; }
-h2 {text-align:center; margin-bottom:10px; padding-right: 60px;}
+h2 {text-align:center; margin-bottom:10px;}
 .user-info { text-align: center; font-size: 14px; margin-bottom: 20px; color: var(--accent); font-weight: bold; }
 input, select, button {padding:8px; margin:5px 0; border-radius:6px; border:1px solid #bbb; font-size:16px;}
 button {background: var(--accent); color:white; border:none; cursor:pointer;}
 button:hover {opacity:0.9;}
+
+/* Menu de Configurações - CENTRALIZADO */
+.config-menu { position: absolute; top: 15px; left: 15px; z-index: 1001; }
+.gear-btn { 
+    background: #666; 
+    font-size: 22px; 
+    width: 42px; 
+    height: 42px; 
+    border-radius: 50%; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    padding: 0; 
+    line-height: 0;
+}
+.dropdown-content { display: none; position: absolute; left: 0; top: 48px; background-color: var(--card); min-width: 160px; box-shadow: 0px 8px 16px rgba(0,0,0,0.2); border-radius: 8px; overflow: hidden; }
+.dropdown-content button { width: 100%; margin: 0; border-radius: 0; border: none; background: transparent; color: var(--text); text-align: left; padding: 12px 16px; border-bottom: 1px solid #eee; font-size: 14px; }
+.dropdown-content button:hover { background-color: rgba(0,0,0,0.05); }
+.show { display: block; }
+
 ul {list-style:none; padding:0; margin-top:10px;}
 li {background:#ddd; color:#000; padding:12px; border-radius:8px; margin-bottom:12px; display:flex; flex-direction:column; gap: 8px;}
 .completed {background:#b7e4b1 !important; opacity: 0.8;}
@@ -34,8 +54,6 @@ li {background:#ddd; color:#000; padding:12px; border-radius:8px; margin-bottom:
 .delete-btn {background:red; padding:10px; border-radius:6px; color:#fff; border:none; cursor:pointer;}
 .tab-buttons {display:flex; gap:5px; margin-bottom:10px; flex-wrap:wrap;}
 .tab-buttons button {flex:1; font-size: 13px; padding: 10px 2px;}
-.extra-actions { display: flex; gap: 5px; margin-bottom: 10px; flex-wrap: wrap;}
-.extra-actions button { flex: 1; font-size: 12px; background: #555; }
 #log-lista { font-size: 13px; max-height: 400px; overflow-y: auto; background: #eee; padding: 10px; border-radius: 8px; color: #333; }
 .dark #log-lista { background: #444; color: #ccc; }
 .category-section {margin-top:15px; padding: 10px; background: rgba(0,0,0,0.05); border-radius: 8px;}
@@ -46,20 +64,23 @@ li {background:#ddd; color:#000; padding:12px; border-radius:8px; margin-bottom:
 <div id="floatTotal">R$ 0,00</div>
 
 <div id="app">
+    <div class="config-menu">
+        <button class="gear-btn" onclick="toggleMenu()">⚙️</button>
+        <div id="dropdownConfig" class="dropdown-content">
+            <button onclick="toggleDarkMode()">🌙 Tema</button>
+            <button onclick="mudarUsuario()">👤 Nome</button>
+            <button onclick="exportarPDF()">📄 PDF</button>
+            <button onclick="copiarTexto()">📋 Copiar</button>
+            <button onclick="importarTexto()">📥 Importar</button>
+        </div>
+    </div>
+
     <h2>🛒 Lista Compras</h2>
     <div id="userDisplay" class="user-info"></div>
 
-    <div id="top-buttons">
-        <button onclick="toggleDarkMode()">🌙 Tema</button>
-        <button onclick="limparLista()" style="background:#d9534f">🗑 Limpar</button>
-        <button onclick="carregarSugestao()" style="background:#ffa500">💡 Sugestões</button>
-        <button onclick="mudarUsuario()" style="background:#666">👤 Nome</button>
-    </div>
-
-    <div class="extra-actions">
-        <button onclick="exportarPDF()" style="background: #e74c3c;">📄 PDF</button>
-        <button onclick="copiarTexto()" style="background: #3498db;">📋 Copiar</button>
-        <button onclick="importarTexto()" style="background: #9b59b6;">📥 Importar</button>
+    <div id="top-buttons" style="display: flex; gap: 5px;">
+        <button onclick="limparLista()" style="background:#d9534f; flex: 1;">🗑 Limpar</button>
+        <button onclick="carregarSugestao()" style="background:#ffa500; flex: 1;">💡 Sugestões</button>
     </div>
 
     <div class="tab-buttons">
@@ -119,6 +140,9 @@ li {background:#ddd; color:#000; padding:12px; border-radius:8px; margin-bottom:
 
     document.getElementById("userDisplay").innerText = "👤 Usuário: " + usuario;
 
+    window.toggleMenu = () => { document.getElementById("dropdownConfig").classList.toggle("show"); }
+    window.onclick = function(event) { if (!event.target.matches('.gear-btn')) { var dropdowns = document.getElementsByClassName("dropdown-content"); for (var i = 0; i < dropdowns.length; i++) { var openDropdown = dropdowns[i]; if (openDropdown.classList.contains('show')) openDropdown.classList.remove('show'); } } }
+
     async function salvarLog(acao) {
         await addDoc(logsRef, { texto: `${usuario} ${acao}`, hora: new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}), timestamp: Date.now() });
     }
@@ -138,16 +162,12 @@ li {background:#ddd; color:#000; padding:12px; border-radius:8px; margin-bottom:
         const ul = document.getElementById("lista");
         ul.innerHTML = "";
         let total = 0;
-
         lista.filter(i => i.tipo === abaAtual).forEach((item) => {
             if(filtro && !item.nome.toLowerCase().includes(filtro)) return;
             if(item.checado) total += (item.valor * item.quantidade);
-            
             let li = document.createElement("li");
             if(item.checado) li.classList.add("completed");
-
             const catOptionsHtml = categoriasOpcoes.map(cat => `<option value="${cat}" ${item.categoria === cat ? 'selected' : ''}>${cat}</option>`).join('');
-
             li.innerHTML = `
                 <div><strong class="item-nome">${item.nome}</strong></div>
                 <div class="linha">
@@ -155,15 +175,12 @@ li {background:#ddd; color:#000; padding:12px; border-radius:8px; margin-bottom:
                         R$ <input type="number" value="${item.valor}" step="0.01" style="width:65px" onchange="atualizarCampo('${item.id}', 'valor', this.value, '${item.nome}')">
                         Qtd <input type="number" value="${item.quantidade}" style="width:40px" onchange="atualizarCampo('${item.id}', 'quantidade', this.value, '${item.nome}')">
                     </div>
-                    <div class="inputs-inline">
-                        Cat: <select onchange="atualizarCampo('${item.id}', 'categoria', this.value, '${item.nome}')" style="width:100px">${catOptionsHtml}</select>
-                    </div>
+                    <div class="inputs-inline">Cat: <select onchange="atualizarCampo('${item.id}', 'categoria', this.value, '${item.nome}')" style="width:100px">${catOptionsHtml}</select></div>
                 </div>
                 <div class="linha" style="margin-top:5px; justify-content: flex-end; gap: 8px;">
                     <button class="check-btn" onclick="checkItem('${item.id}', ${item.checado}, '${item.nome}')">${item.checado?'PEGOU':'PEGAR'}</button>
                     <button class="delete-btn" onclick="remover('${item.id}', '${item.nome}')">✖</button>
-                </div>
-            `;
+                </div>`;
             ul.appendChild(li);
         });
         document.getElementById("totalChecked").innerText = `Total Pegos (${abaAtual}): R$ ${total.toFixed(2)}`;
@@ -174,7 +191,6 @@ li {background:#ddd; color:#000; padding:12px; border-radius:8px; margin-bottom:
         let finalVal = valor;
         if(campo === 'valor') finalVal = parseFloat(valor) || 0;
         if(campo === 'quantidade') finalVal = parseInt(valor) || 1;
-        
         await updateDoc(doc(db, "compras", id), { [campo]: finalVal });
         await salvarLog(`editou ${campo} de "${nome}"`);
     };
